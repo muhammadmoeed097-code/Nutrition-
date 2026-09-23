@@ -8,11 +8,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # =========================================================
-# AAPKI GEMINI API KEY YAHAN PASTE KAREIN (AIzaSy...)
+# API KEY RETRIEVAL (Safe for Local & Streamlit Cloud)
 # =========================================================
 HARDCODED_API_KEY = "YOUR_GEMINI_API_KEY_HERE"
 
-ENV_GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", HARDCODED_API_KEY)
+# Safe Secrets Retrieval for Streamlit Cloud
+cloud_secret_key = None
+try:
+    if "GEMINI_API_KEY" in st.secrets:
+        cloud_secret_key = st.secrets["GEMINI_API_KEY"]
+except Exception:
+    pass
+
+ENV_GEMINI_API_KEY = cloud_secret_key or os.getenv("GEMINI_API_KEY", HARDCODED_API_KEY)
 
 # ---------------------------------------------------------
 # Page Configuration & Styling
@@ -44,7 +52,7 @@ st.markdown("""
 st.markdown("""
 <div class="main-header">
     <h1>🥗 Global Nutrition & Health AI Assistant</h1>
-    <p>Powered by Google Gemini — Multi-Language Recipes, Height Increase Guides, Maggi & Fruit Chaat Hacks!</p>
+    <p>Powered by Google Gemini — Multi-Language Recipes, Height Increase Guides, Medical Filters, Maggi & Fruit Chaat Hacks!</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -89,7 +97,7 @@ with st.sidebar:
         height = st.number_input("Height (cm)", min_value=100.0, max_value=250.0, value=170.0)
         gender = st.selectbox("Gender", ["Male", "Female"])
 
-    # Height Gain added to goals
+    # Goals including Height Increase
     goal = st.selectbox("Your Goal", ["Maintain Weight", "Weight Loss", "Muscle Gain", "Height Increase / Growth"])
     activity_level = st.selectbox("Activity Level", ["Sedentary (Little/No exercise)", "Moderate (3-5 days/week)", "Active (6-7 days/week)"])
     diet_pref = st.multiselect("Dietary Restrictions", ["Vegetarian", "Vegan", "Halal", "Keto", "Lactose Free", "Gluten Free"])
@@ -144,9 +152,10 @@ with st.sidebar:
     st.divider()
     st.header("⚙️ Model Settings")
     
+    # Flash, Pro aur 1.5 teeno Gemini models add kar diye gaye hain
     selected_model = st.selectbox(
         "Gemini Model", 
-        ["gemini-2.5-flash", "gemini-1.5-flash"], 
+        ["gemini-3.6-flash", "gemini-3.6-pro", "gemini-1.5-flash"], 
         index=0
     )
     temperature = st.slider("Creativity Level", 0.1, 1.0, 0.7, 0.1)
@@ -200,7 +209,7 @@ CORE RESPONSIBILITIES:
 """
 
 if not final_api_key or final_api_key == "YOUR_GEMINI_API_KEY_HERE":
-    st.warning("⚠️ Please enter your Google Gemini API Key in the sidebar or in line 13 of App_Nutrition.py!")
+    st.warning("⚠️ Please enter your Google Gemini API Key in the sidebar or setup GEMINI_API_KEY in secrets!")
     st.stop()
 
 # Initialize GenAI Client
